@@ -1,0 +1,23 @@
+{
+  "name": "advisor-scheduler",
+  "version": "1.0.0",
+  "description": "Package for assigning applications to advisors. Written as a node module for Freja in Zensum 2.0, but in Kotlin to simplify potential adaptation to Zensum 3.0.",
+  "main": "build/node_modules/advisor-scheduler_main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zensum/advisor-scheduler.git"
+  },
+  "author": "Rikard Wadman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zensum/advisor-scheduler/issues"
+  },
+  "homepage": "https://github.com/zensum/advisor-scheduler#readme",
+  "dependencies": {
+    "kotlin": "^1.1.3-2",
+    "mocha": "^3.5.0"
+  }
+}
