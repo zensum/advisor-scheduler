@@ -102,7 +102,7 @@ data class Advisor(
 data class Application(val id: String = "", var advisor_id: String = "", val slot: Slot)
 class Slot private constructor(val time: String) {
 
-    var desiredApplicationsPerAdvisor: Float = 0
+    var desiredApplicationsPerAdvisor: Float = 0f
     companion object Factory {
         fun get(time: String): Slot {
             var slot = slots.find { time == it.time }
