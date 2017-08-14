@@ -100,12 +100,8 @@ data class Advisor(
     val slots: MutableList<Slot> = mutableListOf<Slot>()
 )
 data class Application(val id: String = "", var advisor_id: String = "", val slot: Slot)
-class Slot {
-    private constructor(time: String) {
-        this.time = time
-    }
+class Slot private constructor(val time: String) {
 
-    val time: String
     var desiredApplicationsPerAdvisor: Float = 0
     companion object Factory {
         fun get(time: String): Slot {
