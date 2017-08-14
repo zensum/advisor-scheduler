@@ -58,7 +58,7 @@ fun getAdvisorsToAssignTo(
 ):Collection<Advisor> {
     val unassigned = getAppsInSlot(slot, unassignedApps)
     if(unassigned.size == 0) {
-        return arrayOf<Advisor>()
+        return emptyList()
     }
     val assignableAdvisors = advisors.filter {hasSlot(it, slot)}.toMutableList()
     val assigned = getAppsInSlot(slot, assignableAdvisors)
