@@ -1,16 +1,53 @@
 package se.zensum.advisorScheduler
 import kotlin.js.Math
 
+//wrapper that initializes the slots in a way that allows for the singleton-ish (anti)pattern
+//that is used to remove at least some of all the redundant calculations
 @JsName("assignApplications")
-fun assignApplications(applications: MutableList<Application>, advisors: Collection<Advisor>) {
-    reassignApplications(applications, advisors)
-    val unassigned = applications.toMutableList()
+fun jsAssignApplications(
+        applications: Collection<JsApplication>,
+        advisors: Collection<JsAdvisor>
+    ):Collection<Advisor> {
+    val kotlinApplications = applications.map {
+            Application(it.id, it.advisor_id, Slot.get(it.return_at))
+        }
+
+    val kotlinAdvisors = advisors.map {
+            Advisor(
+                it.id,
+                kotlinApplications.filter {app -> it.id == app.advisor_id }.toMutableList(),
+                it.slots.map {time -> Slot.get(time) }
+            )
+        }
+
+    return assignApplications(
+        kotlinApplications.filter {app -> app.advisor_id.isNullOrEmpty() || !kotlinAdvisors.any { it -> it.id == app.advisor_id } },
+        kotlinAdvisors
+    )
+}
+
+data class JsAdvisor(
+    val id: String,
+    val slots: List<String> = emptyList()
+)
+
+data class JsApplication(
+    val id: String,
+    val advisor_id: String = "",
+    val return_at: String = ""
+)
+
+fun assignApplications(
+    applicationsToAssign: Collection<Application>,
+    advisors: Collection<Advisor>
+): Collection<Advisor> {
+    val unassigned = applicationsToAssign.toMutableList()
     Slot.all().forEach {
         it.desiredApplicationsPerAdvisor =
             calcDesiredApplicationsPerAdvisor(it, advisors, unassigned)
     }
 
-    for (app in applications) {
+    for (app in applicationsToAssign) {
         app.slot.desiredApplicationsPerAdvisor =
             calcDesiredApplicationsPerAdvisor(app.slot, advisors, unassigned)
         val advisor = getAdvisorsHavingSlot(app.slot, advisors).minBy {
@@ -22,18 +59,9 @@ fun assignApplications(applications: MutableList<Application>, advisors: Collect
         }
         app.slot.desiredApplicationsPerAdvisor =
             calcDesiredApplicationsPerAdvisor(app.slot, advisors, unassigned)
-    }//TODO: maybe return something if unassigned is not empty
-}
-
-fun reassignApplications(applications: MutableList<Application>, advisors: Collection<Advisor>) {
-    advisors.forEach { advisor ->
-        var apps = applications.filter { app -> app.advisor_id == advisor.id }
-        advisor.applications.addAll(apps)
-        applications.removeAll(apps)
     }
+    return advisors
 }
-
-
 
 fun hasSlot(advisor: Advisor, slot: Slot) = advisor.slots.any {it.time == slot.time}
 fun getAdvisorsHavingSlot(slot: Slot, advisors: Collection<Advisor>) = advisors.filter {hasSlot(it, slot)}
@@ -104,7 +132,7 @@ fun predictAvgBooks(
 data class Advisor(
     val id: String,
     val applications: MutableList<Application> = mutableListOf<Application>(),
-    val slots: List<Slot> = listOf<Slot>()
+    val slots: List<Slot> = emptyList()
 )
 data class Application(val id: String = "", var advisor_id: String = "", val slot: Slot)
 class Slot private constructor(val time: String) {
@@ -128,3 +156,5 @@ class Slot private constructor(val time: String) {
         private val slots: MutableList<Slot> = mutableListOf<Slot>()
     }
 }
+
+

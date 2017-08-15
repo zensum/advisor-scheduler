@@ -1,12 +1,14 @@
 import se.zensum.advisorScheduler.assignApplications
-import se.zensum.advisorScheduler.reassignApplications
 import se.zensum.advisorScheduler.Advisor
 import se.zensum.advisorScheduler.Application
+import se.zensum.advisorScheduler.JsAdvisor
+import se.zensum.advisorScheduler.JsApplication
 import se.zensum.advisorScheduler.Slot
 import se.zensum.advisorScheduler.hasSlot
 import se.zensum.advisorScheduler.calcDesiredApplicationsPerAdvisor
 import se.zensum.advisorScheduler.countAppsInSlot
 import se.zensum.advisorScheduler.predictAvgBooks
+import se.zensum.advisorScheduler.jsAssignApplications
 import kotlin.test.*
 
 class AdvisorSchedulerTest {
@@ -15,26 +17,6 @@ class AdvisorSchedulerTest {
         var slot2 = Slot.get("10:00")
 
         assertEquals(slot1, slot2)
-    }
-
-    @Test fun testReassignApplications() {
-        var app1 = Application("1","4",Slot.get("10:00"))
-        var app2 = Application("1", "", Slot.get("10:00"))
-        var app3 = Application("1","3",Slot.get("10:00"))
-        var app4 = Application("1","4",Slot.get("10:00"))
-        var apps = mutableListOf(app1, app2, app3, app4)
-        var adv1 = Advisor("3")
-        var adv2 = Advisor("4")
-        var advisors = listOf(adv1, adv2)
-
-        reassignApplications(apps, advisors)
-
-        assertEquals(apps.size, 1, "apps should have size 1")
-        assertTrue(apps.contains(app2), "apps should contain the unassigned app")
-        assertEquals(adv1.applications.size, 1, "adv1.applications should have size 1")
-        assertTrue(adv1.applications.contains(app3), "adv1.applications should contain app3")
-        assertEquals(adv2.applications.size, 2, "adv2.applications should have size 2")
-        assertTrue(adv2.applications.containsAll(listOf(app1, app4)), "adv2.applications should contain app1 and app4")
     }
 
 
@@ -145,34 +127,34 @@ class AdvisorSchedulerTest {
             Slot.get("12:00")
         )
 
-        var advisors = listOf(
-            Advisor("1", slots=slots.slice(listOf(0))),
-            Advisor("2", slots=slots.slice(listOf(0,1,2))),
-            Advisor("3", slots=slots.slice(listOf(1,2))),
-            Advisor("4", slots=slots.slice(listOf(2))),
-            Advisor("5", slots=slots.slice(listOf(0,1)))
+        var jsAdvisors = listOf(
+            JsAdvisor("1", slots=listOf("10:00")),
+            JsAdvisor("2", slots=listOf("10:00", "11:00", "12:00")),
+            JsAdvisor("3", slots=listOf("11:00", "12:00")),
+            JsAdvisor("4", slots=listOf("12:00")),
+            JsAdvisor("5", slots=listOf("10:00", "11:00"))
         )
 
         var apps = mutableListOf(
-            Application("1", slot=slots[0]),
-            Application("2", slot=slots[0]),
-            Application("3", advisor_id="1", slot=slots[0]),
-            Application("4", slot=slots[0]),
-            Application("5", slot=slots[0]),
-            Application("6", advisor_id="5", slot=slots[0]),
-            Application("7", advisor_id="5", slot=slots[0]),
-            Application("8", slot=slots[0]),
-            Application("9", slot=slots[1]),
-            Application("10", advisor_id="5", slot=slots[1]),
-            Application("11", slot=slots[1]),
-            Application("12", slot=slots[1]),
-            Application("13", advisor_id="5", slot=slots[1]),
-            Application("14", slot=slots[1]),
-            Application("15", slot=slots[2]),
-            Application("16", slot=slots[2])
+            JsApplication("1", return_at="10:00"),
+            JsApplication("2", return_at="10:00"),
+            JsApplication("3", advisor_id="1", return_at="10:00"),
+            JsApplication("4", return_at="10:00"),
+            JsApplication("5", return_at="10:00"),
+            JsApplication("6", advisor_id="5", return_at="10:00"),
+            JsApplication("7", advisor_id="5", return_at="10:00"),
+            JsApplication("8", return_at="10:00"),
+            JsApplication("9", return_at="11:00"),
+            JsApplication("10", advisor_id="5", return_at="11:00"),
+            JsApplication("11", return_at="11:00"),
+            JsApplication("12", return_at="11:00"),
+            JsApplication("13", advisor_id="5", return_at="11:00"),
+            JsApplication("14", return_at="11:00"),
+            JsApplication("15", return_at="12:00"),
+            JsApplication("16", return_at="12:00")
         )
 
-        assignApplications(apps, advisors)
+        val advisors = jsAssignApplications(apps, jsAdvisors).toList()
 
         //slot 1
         assertEquals(2, countAppsInSlot(slots[0], advisors[0]), "advisor 1 gets 2 apps in slot 1")
