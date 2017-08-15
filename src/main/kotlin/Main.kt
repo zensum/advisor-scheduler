@@ -2,7 +2,7 @@ package se.zensum.advisorScheduler
 import kotlin.js.Math
 
 @JsName("assignApplications")
-fun assignApplications(slots: Array<Slot>, applications: MutableList<Application>, advisors: Array<Advisor>) {
+fun assignApplications(applications: MutableList<Application>, advisors: Collection<Advisor>) {
     reassignApplications(applications, advisors)
     val unassigned = applications.toMutableList()
     for (app in applications) {
@@ -10,15 +10,16 @@ fun assignApplications(slots: Array<Slot>, applications: MutableList<Application
             calcDesiredApplicationsPerAdvisor(app.slot, advisors, unassigned)
 
         val advisor = getAdvisorsHavingSlot(app.slot, advisors).minBy {
-            calcSlotScore(app.slot, it, advisors, unassigned)
+            calcSlotScore(app.slot, it)
         }
-
-        advisor.applications.add(app)
-        unassigned.remove(app)
-    }
+        if(advisor != null) {
+            advisor.applications.add(app)
+            unassigned.remove(app)
+        }
+    }//TODO: maybe return something if unassigned is not empty
 }
 
-fun reassignApplications(applications: MutableList<Application>, advisors: Array<Advisor>) {
+fun reassignApplications(applications: MutableList<Application>, advisors: Collection<Advisor>) {
     advisors.forEach { advisor ->
         var apps = applications.filter { app -> app.advisor_id == advisor.id }
         advisor.applications.addAll(apps)
@@ -29,7 +30,7 @@ fun reassignApplications(applications: MutableList<Application>, advisors: Array
 
 
 fun hasSlot(advisor: Advisor, slot: Slot) = advisor.slots.any {it.time == slot.time}
-fun getAdvisorsHavingSlot(slot: Slot, advisors: Collection<Advisor>) = advisors.filter {hasSlot(it)}
+fun getAdvisorsHavingSlot(slot: Slot, advisors: Collection<Advisor>) = advisors.filter {hasSlot(it, slot)}
 
 fun getAppsInSlot(slot: Slot, advisor: Advisor) = getAppsInSlot(slot, advisor.applications)
 fun getAppsInSlot(slot: Slot, advisors: Collection<Advisor>) = advisors.flatMap {getAppsInSlot(slot, it.applications)}
@@ -75,14 +76,12 @@ fun getAdvisorsToAssignTo(
     return assignableAdvisors
 }
 
-fun calcSlotScore(slot: Slot, advisor: Advisor, advisors: Collection<Advisor>, unassignedApps: Collection<Application>) {
-    return countAppsInSlot(slot, advisor) * 1000 + predictAvgBooks(advisor, advisors, unassignedApps)
+fun calcSlotScore(slot: Slot, advisor: Advisor): Float {
+    return countAppsInSlot(slot, advisor) * 1000 + predictAvgBooks(advisor)
 }
 
 fun predictAvgBooks(
-    advisor: Advisor,
-    advisors: Collection<Advisor>,
-    unassignedApps: Collection<Application>
+    advisor: Advisor
 ):Float {
     return 1 / advisor.slots.size * (
         advisor.slots.map {slot ->
@@ -97,10 +96,11 @@ fun predictAvgBooks(
 data class Advisor(
     val id: String,
     val applications: MutableList<Application> = mutableListOf<Application>(),
-    val slots: MutableList<Slot> = mutableListOf<Slot>()
+    val slots: List<Slot> = listOf<Slot>()
 )
 data class Application(val id: String = "", var advisor_id: String = "", val slot: Slot)
 class Slot private constructor(val time: String) {
+
 
     var desiredApplicationsPerAdvisor: Float = 0f
     companion object Factory {
