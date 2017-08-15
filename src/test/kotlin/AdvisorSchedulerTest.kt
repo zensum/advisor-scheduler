@@ -1,3 +1,4 @@
+import se.zensum.advisorScheduler.assignApplications
 import se.zensum.advisorScheduler.reassignApplications
 import se.zensum.advisorScheduler.Advisor
 import se.zensum.advisorScheduler.Application
@@ -22,7 +23,7 @@ class AdvisorSchedulerTest {
         var apps = mutableListOf(app1, app2, app3, app4)
         var adv1 = Advisor("3")
         var adv2 = Advisor("4")
-        var advisors = arrayOf(adv1, adv2)
+        var advisors = listOf(adv1, adv2)
 
         reassignApplications(apps, advisors)
 
@@ -67,5 +68,48 @@ class AdvisorSchedulerTest {
             )
 
         assertEquals(calcDesiredApplicationsPerAdvisor(slot, advisors, apps), (9.0/4.0).toFloat(), "CalcDesiredApps should calculate correctly")
+    }
+
+    @Test fun testAssignApplicationsDistributesApplicationsEvenlyOverAdvisors() {
+        var slots = listOf(
+            Slot.get("10:00"),
+            Slot.get("11:00"),
+            Slot.get("12:00")
+        )
+
+        var advisors = listOf(
+            Advisor("1", slots=slots.slice(listOf(0))),
+            Advisor("2", slots=slots.slice(listOf(0,1,2))),
+            Advisor("3", slots=slots.slice(listOf(1,2))),
+            Advisor("4", slots=slots.slice(listOf(2))),
+            Advisor("5", slots=slots.slice(listOf(0,1)))
+        )
+
+        var apps = mutableListOf(
+            Application("1", slot=slots[0]),
+            Application("2", slot=slots[0]),
+            Application("3", advisor_id="1", slot=slots[0]),
+            Application("4", slot=slots[0]),
+            Application("5", slot=slots[0]),
+            Application("6", advisor_id="5", slot=slots[0]),
+            Application("7", advisor_id="5", slot=slots[0]),
+            Application("8", slot=slots[0]),
+            Application("9", slot=slots[1]),
+            Application("10", advisor_id="5", slot=slots[1]),
+            Application("11", slot=slots[1]),
+            Application("12", slot=slots[1]),
+            Application("13", advisor_id="5", slot=slots[1]),
+            Application("14", slot=slots[1]),
+            Application("15", slot=slots[2]),
+            Application("15", slot=slots[2])
+        )
+
+        assignApplications(apps, advisors)
+
+        assertEquals(advisors[0].applications.size, 2, "advisor 1 gets 2 apps")
+        assertEquals(advisors[1].applications.size, 6, "advisor 2 gets 5 apps")
+        assertEquals(advisors[2].applications.size, 3, "advisor 3 gets 3 apps")
+        assertEquals(advisors[3].applications.size, 1, "advisor 4 gets 1 app")
+        assertEquals(advisors[4].applications.size, 5, "advisor 5 gets 5 app")
     }
 }
