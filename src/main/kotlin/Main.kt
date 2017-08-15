@@ -5,10 +5,14 @@ import kotlin.js.Math
 fun assignApplications(applications: MutableList<Application>, advisors: Collection<Advisor>) {
     reassignApplications(applications, advisors)
     val unassigned = applications.toMutableList()
+    Slot.all().forEach {
+        it.desiredApplicationsPerAdvisor =
+            calcDesiredApplicationsPerAdvisor(it, advisors, unassigned)
+    }
+
     for (app in applications) {
         app.slot.desiredApplicationsPerAdvisor =
             calcDesiredApplicationsPerAdvisor(app.slot, advisors, unassigned)
-
         val advisor = getAdvisorsHavingSlot(app.slot, advisors).minBy {
             calcSlotScore(app.slot, it)
         }
@@ -16,6 +20,8 @@ fun assignApplications(applications: MutableList<Application>, advisors: Collect
             advisor.applications.add(app)
             unassigned.remove(app)
         }
+        app.slot.desiredApplicationsPerAdvisor =
+            calcDesiredApplicationsPerAdvisor(app.slot, advisors, unassigned)
     }//TODO: maybe return something if unassigned is not empty
 }
 
@@ -46,9 +52,11 @@ fun calcDesiredApplicationsPerAdvisor(
     advisors: Collection<Advisor>,
     unassignedApps: Collection<Application>
 ):Float {
+    val openApps = countAppsInSlot(slot, unassignedApps)
+    if(openApps == 0) return -1f
     val assignableAdvisors = getAdvisorsToAssignTo(slot, advisors,  unassignedApps)
     return (
-        countAppsInSlot(slot, unassignedApps) + countAppsInSlot(slot, assignableAdvisors)
+        openApps + countAppsInSlot(slot, assignableAdvisors)
     ).toFloat() / assignableAdvisors.size
 }
 
@@ -83,7 +91,7 @@ fun calcSlotScore(slot: Slot, advisor: Advisor): Float {
 fun predictAvgBooks(
     advisor: Advisor
 ):Float {
-    return 1 / advisor.slots.size * (
+    return 1 / advisor.slots.size.toFloat() * (
         advisor.slots.map {slot ->
             Math.max(
                 slot.desiredApplicationsPerAdvisor,
@@ -111,6 +119,10 @@ class Slot private constructor(val time: String) {
                 slots.add(slot)
             }
             return slot
+        }
+
+        fun all():List<Slot> {
+            return slots.toList()
         }
 
         private val slots: MutableList<Slot> = mutableListOf<Slot>()

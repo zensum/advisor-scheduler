@@ -18,3 +18,4 @@ npm-debug.log*
 # dotenv environment variables file
 .env
 
+.DS_Store
