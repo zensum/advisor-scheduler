@@ -121,13 +121,13 @@ class AdvisorSchedulerTest {
     }
 
     @Test fun testAssignApplicationsDistributesApplicationsEvenlyOverAdvisors() {
-        var slots = listOf(
+        var slots = arrayOf(
             Slot.get("10:00"),
             Slot.get("11:00"),
             Slot.get("12:00")
         )
 
-        var jsAdvisors = listOf(
+        var jsAdvisors = arrayOf(
             JsAdvisor("1", slots=listOf("10:00")),
             JsAdvisor("2", slots=listOf("10:00", "11:00", "12:00")),
             JsAdvisor("3", slots=listOf("11:00", "12:00")),
@@ -135,7 +135,7 @@ class AdvisorSchedulerTest {
             JsAdvisor("5", slots=listOf("10:00", "11:00"))
         )
 
-        var apps = mutableListOf(
+        var apps = arrayOf(
             JsApplication("1", return_at="10:00"),
             JsApplication("2", return_at="10:00"),
             JsApplication("3", advisor_id="1", return_at="10:00"),

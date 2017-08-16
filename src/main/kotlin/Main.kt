@@ -5,9 +5,9 @@ import kotlin.js.Math
 //that is used to remove at least some of all the redundant calculations
 @JsName("assignApplications")
 fun jsAssignApplications(
-        applications: Collection<JsApplication>,
-        advisors: Collection<JsAdvisor>
-    ):Collection<Advisor> {
+        applications: Array<JsApplication>,
+        advisors: Array<JsAdvisor>
+    ):Array<Advisor> {
     val kotlinApplications = applications.map {
             Application(it.id, it.advisor_id, Slot.get(it.return_at), it.desiredLoan)
         }
@@ -24,7 +24,7 @@ fun jsAssignApplications(
     return assignApplications(
         kotlinApplications.filter {app -> app.advisor_id.isNullOrEmpty() || !kotlinAdvisors.any { it -> it.id == app.advisor_id } },
         kotlinAdvisors
-    )
+    ).toTypedArray()
 }
 
 data class JsAdvisor(
