@@ -128,11 +128,11 @@ class AdvisorSchedulerTest {
         )
 
         var jsAdvisors = arrayOf(
-            JsAdvisor("1", slots=listOf("10:00")),
-            JsAdvisor("2", slots=listOf("10:00", "11:00", "12:00")),
-            JsAdvisor("3", slots=listOf("11:00", "12:00")),
-            JsAdvisor("4", slots=listOf("12:00")),
-            JsAdvisor("5", slots=listOf("10:00", "11:00"))
+            JsAdvisor("1", slots=arrayOf("10:00")),
+            JsAdvisor("2", slots=arrayOf("10:00", "11:00", "12:00")),
+            JsAdvisor("3", slots=arrayOf("11:00", "12:00")),
+            JsAdvisor("4", slots=arrayOf("12:00")),
+            JsAdvisor("5", slots=arrayOf("10:00", "11:00"))
         )
 
         var apps = arrayOf(
@@ -154,7 +154,7 @@ class AdvisorSchedulerTest {
             JsApplication("16", return_at="12:00")
         )
 
-        val advisors = jsAssignApplications(apps, jsAdvisors).toList()
+        val advisors = jsAssignApplications(apps, jsAdvisors).map { it.toAdvisor() }.toList()
 
         //slot 1
         assertEquals(2, countAppsInSlot(slots[0], advisors[0]), "advisor 1 gets 2 apps in slot 1")

@@ -7,38 +7,49 @@ import kotlin.js.Math
 fun jsAssignApplications(
         applications: Array<JsApplication>,
         advisors: Array<JsAdvisor>
-    ):Array<Advisor> {
+    ):Array<JsAdvisor> {
     val kotlinApplications = applications.map {
-            Application(it.id, it.advisor_id, Slot.get(it.return_at), it.desiredLoan)
+            it.toApplication()
         }
 
     val kotlinAdvisors = advisors.map {
-            Advisor(
-                it.id,
-                it.name,
-                kotlinApplications.filter {app -> it.id == app.advisor_id }.toMutableList(),
-                it.slots.map {time -> Slot.get(time) }
-            )
+            it.toAdvisor()
         }
+
+    kotlinAdvisors.forEach {
+        it.applications.addAll(kotlinApplications.filter {app -> it.id == app.advisor_id })
+    }
 
     return assignApplications(
         kotlinApplications.filter {app -> app.advisor_id.isNullOrEmpty() || !kotlinAdvisors.any { it -> it.id == app.advisor_id } },
         kotlinAdvisors
-    ).toTypedArray()
+    ) .map {
+        it.toJsAdvisor()
+    } .toTypedArray()
 }
 
-data class JsAdvisor(
+class JsAdvisor constructor (
     val id: String,
     val name: String = "",
-    val slots: List<String> = emptyList()
-)
+    var applications: Array<JsApplication> = emptyArray(),
+    val slots: Array<String> = emptyArray()
+) {
+    fun toAdvisor() = Advisor(
+                id,
+                name,
+                applications.map { it.toApplication() }.toMutableList(),
+                slots.map {time -> Slot.get(time) }
+            )
+}
 
-data class JsApplication(
+class JsApplication constructor(
     val id: String,
     val advisor_id: String = "",
     val return_at: String = "",
     val desiredLoan: Int = 0
-)
+) {
+    fun toApplication() = Application(id, advisor_id, Slot.get(return_at), desiredLoan)
+}
 
 fun assignApplications(
     applicationsToAssign: Collection<Application>,
@@ -132,13 +143,32 @@ fun predictAvgBooks(
     )
 }
 
-data class Advisor(
+class Advisor constructor (
     val id: String,
     val name: String = "",
     val applications: MutableList<Application> = mutableListOf<Application>(),
     val slots: List<Slot> = emptyList()
-)
-data class Application(val id: String = "", var advisor_id: String = "", val slot: Slot, val desiredLoan: Int = 0)
+) {
+    fun toJsAdvisor() = JsAdvisor(
+            id,
+            name,
+            applications.map { it.toJsApplication() }.toTypedArray(),
+            slots.map { it.time }.toTypedArray()
+        )
+}
+class Application constructor(
+    val id: String = "",
+    var advisor_id: String = "",
+    val slot: Slot,
+    val desiredLoan: Int = 0
+) {
+    fun toJsApplication() = JsApplication(
+        id,
+        advisor_id,
+        slot.time,
+        desiredLoan
+    )
+}
 
 class Slot private constructor(val time: String) {
     var desiredApplicationsPerAdvisor: Float = 0f
