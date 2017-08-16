@@ -154,7 +154,7 @@ class AdvisorSchedulerTest {
             JsApplication("16", return_at="12:00")
         )
 
-        val advisors = jsAssignApplications(apps, jsAdvisors).map { it.toAdvisor() }.toList()
+        val advisors = jsAssignApplications(apps, jsAdvisors).map { Advisor(it) }.toList()
 
         //slot 1
         assertEquals(2, countAppsInSlot(slots[0], advisors[0]), "advisor 1 gets 2 apps in slot 1")

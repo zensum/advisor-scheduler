@@ -9,11 +9,11 @@ fun jsAssignApplications(
         advisors: Array<JsAdvisor>
     ):Array<JsAdvisor> {
     val kotlinApplications = applications.map {
-            it.toApplication()
+            Application(it)
         }
 
     val kotlinAdvisors = advisors.map {
-            it.toAdvisor()
+            Advisor(it)
         }
 
     kotlinAdvisors.forEach {
@@ -28,28 +28,19 @@ fun jsAssignApplications(
     } .toTypedArray()
 }
 
-class JsAdvisor constructor (
+data class JsAdvisor (
     val id: String,
     val name: String = "",
     var applications: Array<JsApplication> = emptyArray(),
     val slots: Array<String> = emptyArray()
-) {
-    fun toAdvisor() = Advisor(
-                id,
-                name,
-                applications.map { it.toApplication() }.toMutableList(),
-                slots.map {time -> Slot.get(time) }
-            )
-}
+)
 
-class JsApplication constructor(
+data class JsApplication (
     val id: String,
     val advisor_id: String = "",
     val return_at: String = "",
     val desiredLoan: Int = 0
-) {
-    fun toApplication() = Application(id, advisor_id, Slot.get(return_at), desiredLoan)
-}
+)
 
 fun assignApplications(
     applicationsToAssign: Collection<Application>,
@@ -149,6 +140,13 @@ class Advisor constructor (
     val applications: MutableList<Application> = mutableListOf<Application>(),
     val slots: List<Slot> = emptyList()
 ) {
+    constructor(advisor: JsAdvisor): this(
+        advisor.id,
+        advisor.name,
+        if (advisor.applications == null) mutableListOf<Application>()
+        else advisor.applications.map { Application(it) }.toMutableList(),
+        if (advisor.slots == null) emptyList() else  advisor.slots.map { Slot.get(it) }
+    )
     fun toJsAdvisor() = JsAdvisor(
             id,
             name,
@@ -162,6 +160,8 @@ class Application constructor(
     val slot: Slot,
     val desiredLoan: Int = 0
 ) {
+    constructor(app: JsApplication): this(app.id, app.advisor_id, Slot.get(app.return_at), app.desiredLoan)
+
     fun toJsApplication() = JsApplication(
         id,
         advisor_id,
