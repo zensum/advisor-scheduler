@@ -9,12 +9,13 @@ fun jsAssignApplications(
         advisors: Collection<JsAdvisor>
     ):Collection<Advisor> {
     val kotlinApplications = applications.map {
-            Application(it.id, it.advisor_id, Slot.get(it.return_at))
+            Application(it.id, it.advisor_id, Slot.get(it.return_at), it.desiredLoan)
         }
 
     val kotlinAdvisors = advisors.map {
             Advisor(
                 it.id,
+                it.name,
                 kotlinApplications.filter {app -> it.id == app.advisor_id }.toMutableList(),
                 it.slots.map {time -> Slot.get(time) }
             )
@@ -28,13 +29,15 @@ fun jsAssignApplications(
 
 data class JsAdvisor(
     val id: String,
+    val name: String = "",
     val slots: List<String> = emptyList()
 )
 
 data class JsApplication(
     val id: String,
     val advisor_id: String = "",
-    val return_at: String = ""
+    val return_at: String = "",
+    val desiredLoan: Int = 0
 )
 
 fun assignApplications(
@@ -131,13 +134,13 @@ fun predictAvgBooks(
 
 data class Advisor(
     val id: String,
+    val name: String = "",
     val applications: MutableList<Application> = mutableListOf<Application>(),
     val slots: List<Slot> = emptyList()
 )
-data class Application(val id: String = "", var advisor_id: String = "", val slot: Slot)
+data class Application(val id: String = "", var advisor_id: String = "", val slot: Slot, val desiredLoan: Int = 0)
+
 class Slot private constructor(val time: String) {
-
-
     var desiredApplicationsPerAdvisor: Float = 0f
     companion object Factory {
         fun get(time: String): Slot {
