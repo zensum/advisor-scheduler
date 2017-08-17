@@ -13,17 +13,19 @@ import kotlin.test.*
 
 class AdvisorSchedulerTest {
     @Test fun testGettingSlotWithSameTimeReturnsSameObject() {
-        var slot1 = Slot.get("10:00")
-        var slot2 = Slot.get("10:00")
+        Slot.setSlots(arrayOf("2017-08-01 10:00","2017-08-01 11:00", "2017-08-01 12:00"))
+        var slot1 = Slot.get("2017-08-01 10:00")
+        var slot2 = Slot.get("2017-08-01 10:00")
 
         assertEquals(slot1, slot2)
     }
 
 
     @Test fun testHasSlot() {
-        var slot1 = Slot.get("10:00")
-        var slot2 = Slot.get("11:00")
-        var slot3 = Slot.get("10:00")
+        Slot.setSlots(arrayOf("2017-08-01 10:00","2017-08-01 11:00", "2017-08-01 12:00"))
+        var slot1 = Slot.get("2017-08-01 10:00")
+        var slot2 = Slot.get("2017-08-01 11:00")
+        var slot3 = Slot.get("2017-08-01 10:00")
 
         var advisor = Advisor(id = "1", slots = mutableListOf(slot1))
 
@@ -33,7 +35,8 @@ class AdvisorSchedulerTest {
     }
 
     @Test fun testCalcDesiredAppsPerAdvisor() {
-        var slot = Slot.get("10:00")
+        Slot.setSlots(arrayOf("2017-08-01 10:00","2017-08-01 11:00", "2017-08-01 12:00"))
+        var slot = Slot.get("2017-08-01 10:00")
         var apps = listOf(
             Application("1", slot=slot),
             Application("2", slot=slot),
@@ -55,10 +58,11 @@ class AdvisorSchedulerTest {
     }
 
     @Test fun testCalcPredictedAverageBooks() {
+        Slot.setSlots(arrayOf("2017-08-01 10:00","2017-08-01 11:00", "2017-08-01 12:00"))
         var slots = listOf(
-            Slot.get("10:00"),
-            Slot.get("11:00"),
-            Slot.get("12:00")
+            Slot.get("2017-08-01 10:00"),
+            Slot.get("2017-08-01 11:00"),
+            Slot.get("2017-08-01 12:00")
         )
 
         var advisors = listOf(
@@ -121,41 +125,42 @@ class AdvisorSchedulerTest {
     }
 
     @Test fun testAssignApplicationsDistributesApplicationsEvenlyOverAdvisors() {
-        var slots = arrayOf(
-            Slot.get("10:00"),
-            Slot.get("11:00"),
-            Slot.get("12:00")
-        )
+
 
         var jsAdvisors = arrayOf(
-            JsAdvisor("1", slots=arrayOf("10:00")),
-            JsAdvisor("2", slots=arrayOf("10:00", "11:00", "12:00")),
-            JsAdvisor("3", slots=arrayOf("11:00", "12:00")),
-            JsAdvisor("4", slots=arrayOf("12:00")),
-            JsAdvisor("5", slots=arrayOf("10:00", "11:00"))
+            JsAdvisor("1", slots=arrayOf("2017-08-01 10:00")),
+            JsAdvisor("2", slots=arrayOf("2017-08-01 10:00", "2017-08-01 11:00", "2017-08-01 12:00")),
+            JsAdvisor("3", slots=arrayOf("2017-08-01 11:00", "2017-08-01 12:00")),
+            JsAdvisor("4", slots=arrayOf("2017-08-01 12:00")),
+            JsAdvisor("5", slots=arrayOf("2017-08-01 10:00", "2017-08-01 11:00"))
         )
 
         var apps = arrayOf(
-            JsApplication("1", return_at="10:00"),
-            JsApplication("2", return_at="10:00"),
-            JsApplication("3", advisor_id="1", return_at="10:00"),
-            JsApplication("4", return_at="10:00"),
-            JsApplication("5", return_at="10:00"),
-            JsApplication("6", advisor_id="5", return_at="10:00"),
-            JsApplication("7", advisor_id="5", return_at="10:00"),
-            JsApplication("8", return_at="10:00"),
-            JsApplication("9", return_at="11:00"),
-            JsApplication("10", advisor_id="5", return_at="11:00"),
-            JsApplication("11", return_at="11:00"),
-            JsApplication("12", return_at="11:00"),
-            JsApplication("13", advisor_id="5", return_at="11:00"),
-            JsApplication("14", return_at="11:00"),
-            JsApplication("15", return_at="12:00"),
-            JsApplication("16", return_at="12:00")
+            JsApplication("1", return_at="2017-08-01 10:00"),
+            JsApplication("2", return_at="2017-08-01 10:00"),
+            JsApplication("3", advisor_id="1", return_at="2017-08-01 10:00"),
+            JsApplication("4", return_at="2017-08-01 10:00"),
+            JsApplication("5", return_at="2017-08-01 10:00"),
+            JsApplication("6", advisor_id="5", return_at="2017-08-01 10:00"),
+            JsApplication("7", advisor_id="5", return_at="2017-08-01 10:00"),
+            JsApplication("8", return_at="2017-08-01 10:00"),
+            JsApplication("9", return_at="2017-08-01 11:00"),
+            JsApplication("10", advisor_id="5", return_at="2017-08-01 11:00"),
+            JsApplication("11", return_at="2017-08-01 11:00"),
+            JsApplication("12", return_at="2017-08-01 11:00"),
+            JsApplication("13", advisor_id="5", return_at="2017-08-01 11:00"),
+            JsApplication("14", return_at="2017-08-01 11:00"),
+            JsApplication("15", return_at="2017-08-01 12:00"),
+            JsApplication("16", return_at="2017-08-01 12:00")
         )
 
-        val advisors = jsAssignApplications(apps, jsAdvisors).map { Advisor(it) }.toList()
-
+        val advisors = jsAssignApplications(
+            arrayOf("2017-08-01 10:00","2017-08-01 11:00", "2017-08-01 12:00"), apps, jsAdvisors).map { Advisor(it) }.toList()
+        var slots = arrayOf(
+            Slot.get("2017-08-01 10:00"),
+            Slot.get("2017-08-01 11:00"),
+            Slot.get("2017-08-01 12:00")
+        )
         //slot 1
         assertEquals(2, countAppsInSlot(slots[0], advisors[0]), "advisor 1 gets 2 apps in slot 1")
         assertEquals(3, countAppsInSlot(slots[0], advisors[1]), "advisor 2 gets 3 apps in slot 1")

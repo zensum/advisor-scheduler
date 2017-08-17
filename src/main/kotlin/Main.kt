@@ -1,13 +1,20 @@
 package se.zensum.advisorScheduler
 import kotlin.js.Math
+import kotlin.js.Date
+external fun require(module:String):dynamic
+
 
 //wrapper that initializes the slots in a way that allows for the singleton-ish (anti)pattern
 //that is used to remove at least some of all the redundant calculations
 @JsName("assignApplications")
 fun jsAssignApplications(
+        slots: Array<String>,
         applications: Array<JsApplication>,
         advisors: Array<JsAdvisor>
     ):Array<JsAdvisor> {
+
+    Slot.setSlots(slots)
+
     val kotlinApplications = applications.map {
             Application(it)
         }
@@ -174,23 +181,35 @@ class Application constructor(
     )
 }
 
-class Slot private constructor(val time: String) {
+class Slot private constructor(val time: String, val durationInMinutes: Int) {
     var desiredApplicationsPerAdvisor: Float = 0f
     companion object Factory {
         fun get(time: String): Slot {
-            var slot = slots.find { time == it.time }
-            if(slot == null) {
-                slot = Slot(time)
-                slots.add(slot)
+            var slot = slots.find {
+                time == it.time ||
+                moment(time).add(1, "ms").isBetween(
+                    moment(it.time),
+                    moment(it.time).add(it.durationInMinutes, "minutes")
+                )
             }
-            return slot
+            if(slot == null) {
+                return nullSlot
+            } else {
+                return slot
+            }
+
         }
 
         fun all():List<Slot> {
             return slots.toList()
         }
 
-        private val slots: MutableList<Slot> = mutableListOf<Slot>()
+        fun setSlots(slots: Array<String>) {
+            Slot.slots = slots.map {Slot(it, 15)}.toList()
+        }
+        private var nullSlot: Slot = Slot("not found", 0)
+        private var slots: List<Slot> = emptyList()
+        private val moment = require("moment")
     }
 }
 

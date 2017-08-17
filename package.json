@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/zensum/advisor-scheduler#readme",
   "dependencies": {
-    "kotlin": "^1.1.3-2"
+    "kotlin": "^1.1.3-2",
+    "moment": "^2.18.1"
   },
   "devDependencies": {
     "mocha": "^3.5.0"
