@@ -30,7 +30,8 @@ fun jsAssignApplications(
 
 data class JsAdvisor (
     val id: String,
-    val name: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     var applications: Array<JsApplication> = emptyArray(),
     val slots: Array<String> = emptyArray()
 )
@@ -136,20 +137,23 @@ fun predictAvgBooks(
 
 class Advisor constructor (
     val id: String,
-    val name: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val applications: MutableList<Application> = mutableListOf<Application>(),
     val slots: List<Slot> = emptyList()
 ) {
     constructor(advisor: JsAdvisor): this(
         advisor.id,
-        advisor.name,
+        advisor.firstName,
+        advisor.lastName,
         if (advisor.applications == null) mutableListOf<Application>()
         else advisor.applications.map { Application(it) }.toMutableList(),
         if (advisor.slots == null) emptyList() else  advisor.slots.map { Slot.get(it) }
     )
     fun toJsAdvisor() = JsAdvisor(
             id,
-            name,
+            firstName,
+            lastName,
             applications.map { it.toJsApplication() }.toTypedArray(),
             slots.map { it.time }.toTypedArray()
         )

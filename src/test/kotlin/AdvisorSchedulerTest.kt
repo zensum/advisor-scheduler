@@ -44,9 +44,9 @@ class AdvisorSchedulerTest {
         )
         var slots = mutableListOf(slot)
         var advisors = listOf(
-                Advisor("1", "", mutableListOf(Application("7", slot=slot), Application("8", slot=slot)), slots),
-                Advisor("2", "", mutableListOf(Application("10", slot=slot), Application("11", slot=slot), Application("12", slot=slot), Application("13", slot=slot)), slots),
-                Advisor("3", "", mutableListOf(Application("9", slot=slot)), slots),
+                Advisor("1", "","", mutableListOf(Application("7", slot=slot), Application("8", slot=slot)), slots),
+                Advisor("2", "","", mutableListOf(Application("10", slot=slot), Application("11", slot=slot), Application("12", slot=slot), Application("13", slot=slot)), slots),
+                Advisor("3", "","", mutableListOf(Application("9", slot=slot)), slots),
                 Advisor("4", slots=slots),
                 Advisor("5", slots=slots)
             )
