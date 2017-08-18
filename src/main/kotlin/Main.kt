@@ -188,8 +188,8 @@ class Slot private constructor(val time: String, val durationInMinutes: Int) {
             var slot = slots.find {
                 time == it.time ||
                 moment(time).add(1, "ms").isBetween(
-                    moment(it.time),
-                    moment(it.time).add(it.durationInMinutes, "minutes")
+                    moment(it.time, "YYYY-MM-DD hh:mm"),
+                    moment(it.time, "YYYY-MM-DD hh:mm").add(it.durationInMinutes, "minutes")
                 )
             }
             if(slot == null) {
